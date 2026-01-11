@@ -2,142 +2,185 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Adopt Me Shop</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Adopt Me Premium</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
-            --bg: var(--tg-theme-bg-color, #ffffff);
-            --text: var(--tg-theme-text-color, #222);
-            --hint: var(--tg-theme-hint-color, #999);
-            --button: var(--tg-theme-button-color, #3390ec);
+            --main-bg: #0f0f13;
+            --card-bg: #1e1e24;
+            --accent: #7b2cbf;
+            --gold: #ff9100;
+            --text: #e0e0e0;
         }
-        body { font-family: sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 0; }
-        .container { padding: 15px; padding-bottom: 80px; }
+        body { font-family: 'Inter', sans-serif; background: var(--main-bg); color: var(--text); margin: 0; padding: 0; user-select: none; }
+        .container { padding: 20px; padding-bottom: 100px; }
         
-        /* Вкладки */
-        .tab-content { display: none; }
-        .active { display: block; }
+        /* Стилизация заголовков */
+        h2, h3 { color: var(--accent); text-transform: uppercase; letter-spacing: 1px; }
 
         /* Профиль */
-        .profile-box { background: var(--tg-theme-secondary-bg-color, #f4f4f4); padding: 15px; border-radius: 12px; margin-bottom: 15px; }
-        .lvl-badge { background: gold; color: black; padding: 2px 8px; border-radius: 5px; font-weight: bold; }
+        .profile-card {
+            background: linear-gradient(145deg, #23232e, #16161d);
+            border-radius: 20px; padding: 20px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+            border: 1px solid #333; margin-bottom: 20px;
+        }
+        .balance-info { font-size: 28px; font-weight: bold; color: var(--gold); margin: 10px 0; }
+        
+        /* Кнопки действий */
+        .action-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .btn {
+            background: var(--accent); color: white; border: none; padding: 15px;
+            border-radius: 12px; font-weight: bold; cursor: pointer; transition: 0.2s;
+        }
+        .btn:disabled { background: #444; color: #888; }
+        .btn-star { background: #00a8ff; display: flex; align-items: center; justify-content: center; gap: 5px; }
 
         /* Магазин */
-        .item-card { border: 1px solid #ddd; padding: 10px; border-radius: 10px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; }
-        .item-card img { width: 50px; height: 50px; border-radius: 5px; }
+        .shop-item {
+            background: var(--card-bg); border-radius: 15px; padding: 15px;
+            margin-bottom: 15px; display: flex; align-items: center; border: 1px solid #2d2d35;
+        }
+        .shop-item img { width: 60px; height: 60px; margin-right: 15px; filter: drop-shadow(0 0 5px var(--accent)); }
+        .item-info { flex-grow: 1; }
 
-        /* Рулетка */
-        .roulette-box { text-align: center; padding: 20px; border: 2px dashed var(--button); border-radius: 15px; }
-        #roulette-result { font-size: 24px; margin: 15px 0; font-weight: bold; }
+        /* Вкладки */
+        .tab-content { display: none; animation: slideUp 0.4s ease; }
+        .active { display: block; }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-        /* Кнопки */
-        button { background: var(--button); color: white; border: none; padding: 10px 15px; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold; }
-        button:active { transform: scale(0.98); }
+        /* Навигация */
+        .navbar {
+            position: fixed; bottom: 0; width: 100%; background: #16161d;
+            display: flex; justify-content: space-around; padding: 15px 0;
+            border-top: 2px solid var(--accent);
+        }
+        .nav-link { font-size: 20px; color: #555; cursor: pointer; }
+        .nav-link.active { color: var(--accent); text-shadow: 0 0 10px var(--accent); }
 
-        /* Нижнее меню */
-        .nav-bar { position: fixed; bottom: 0; width: 100%; background: var(--tg-theme-secondary-bg-color, #f4f4f4); display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #ccc; }
-        .nav-item { cursor: pointer; font-size: 12px; text-align: center; color: var(--hint); }
-        .nav-item.active-nav { color: var(--button); font-weight: bold; }
+        .inventory-list { font-size: 14px; color: #aaa; margin-top: 10px; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div id="tab-profile" class="tab-content active">
-        <div class="profile-box">
-            <h2 id="user-name">Игрок</h2>
-            <p>Уровень: <span class="lvl-badge" id="lvl">1</span></p>
-            <p>Баланс: <span id="balance">1000</span> Robux</p>
+        <div class="profile-card">
+            <div id="user-name" style="font-size: 18px; opacity: 0.8;">Загрузка...</div>
+            <div class="balance-info"><span id="balance">0</span> R$</div>
+            <div style="margin-bottom: 10px;">Уровень: <span id="level" style="color:var(--accent)">1</span></div>
+            <div class="inventory-list">Инвентарь: <span id="inv-count">0</span> петов</div>
         </div>
-        <button onclick="getBonus()">🎁 Получить бонус</button>
-        <br><br>
-        <button onclick="tg.openTelegramLink('https://t.me/твой_ник')">🆘 Поддержка</button>
+
+        <button class="btn" id="work-btn" onclick="work()" style="width: 100%; margin-bottom: 10px;">💎 Работать (+10 R$)</button>
+        
+        <h3>Пополнить баланс</h3>
+        <div class="action-btns">
+            <button class="btn btn-star" onclick="buyStars(50)">🌟 500 R$</button>
+            <button class="btn btn-star" onclick="buyStars(100)">🌟 1200 R$</button>
+        </div>
     </div>
 
     <div id="tab-shop" class="tab-content">
-        <h3>Магазин Петов</h3>
-        <div class="item-card">
-            <img src="https://cdn-icons-png.flaticon.com/512/616/616408.png" alt="Pet">
-            <div><b>Shadow Dragon</b><br>5000 R$</div>
-            <button style="width: auto;" onclick="buy(5000)">Купить</button>
+        <h3>Элитные Петы</h3>
+        <div class="shop-item">
+            <img src="https://api.dicebear.com/7.x/icons/svg?seed=dragon&color=7b2cbf" alt="pet">
+            <div class="item-info">
+                <b>Neon Dragon</b><br>
+                <small>Цена: 2500 R$</small>
+            </div>
+            <button class="btn" onclick="buyPet(2500, 'Neon Dragon')">Купить</button>
         </div>
-        <div class="item-card">
-            <img src="https://cdn-icons-png.flaticon.com/512/616/616430.png" alt="Pet">
-            <div><b>Frost Fury</b><br>2500 R$</div>
-            <button style="width: auto;" onclick="buy(2500)">Купить</button>
+        <div class="shop-item">
+            <img src="https://api.dicebear.com/7.x/icons/svg?seed=unicorn&color=7b2cbf" alt="pet">
+            <div class="item-info">
+                <b>Mega Unicorn</b><br>
+                <small>Цена: 5000 R$</small>
+            </div>
+            <button class="btn" onclick="buyPet(5000, 'Mega Unicorn')">Купить</button>
         </div>
     </div>
 
-    <div id="tab-game" class="tab-content">
-        <h3>Испытай удачу!</h3>
-        <div class="roulette-box">
-            <div id="roulette-result">🎰 ???</div>
-            <button onclick="spinRoulette()">Крутить за 100 R$</button>
-        </div>
-        <p style="color: var(--hint); font-size: 12px; margin-top: 10px;">Можно выиграть до 1000 Robux!</p>
+    <div id="tab-help" class="tab-content">
+        <h3>Центр поддержки</h3>
+        <p>Возникли проблемы с оплатой или получением петов?</p>
+        <button class="btn" style="background:#444" onclick="tg.openTelegramLink('https://t.me/ТВОЙ_НИК')">Написать админу</button>
     </div>
 </div>
 
-<div class="nav-bar">
-    <div class="nav-item active-nav" onclick="showTab('profile', this)">👤 Профиль</div>
-    <div class="nav-item" onclick="showTab('shop', this)">🛒 Магазин</div>
-    <div class="nav-item" onclick="showTab('game', this)">🎰 Рулетка</div>
+<div class="navbar">
+    <div class="nav-link active" onclick="showTab('profile', this)">👤</div>
+    <div class="nav-link" onclick="showTab('shop', this)">🛒</div>
+    <div class="nav-link" onclick="showTab('help', this)">🛠️</div>
 </div>
 
 <script>
     let tg = window.Telegram.WebApp;
     tg.expand();
+    tg.headerColor = "#0f0f13";
 
-    let balance = 1000;
-    let lvl = 1;
-
-    if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
-        document.getElementById('user-name').innerText = tg.initDataUnsafe.user.first_name;
-    }
-
-    function showTab(tabName, el) {
-        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active-nav'));
-        document.getElementById('tab-' + tabName).classList.add('active');
-        el.classList.add('active-nav');
-    }
-
-    function buy(price) {
-        if (balance >= price) {
-            balance -= price;
-            lvl += 1;
-            updateUI();
-            tg.showAlert("Поздравляем с покупкой!");
-        } else {
-            tg.showAlert("Не хватает робуксов!");
-        }
-    }
-
-    function getBonus() {
-        balance += 50;
-        updateUI();
-        tg.showScanQrPopup({text: "Бонус получен! +50 Robux"}); // Просто для эффекта или showAlert
-        setTimeout(() => tg.closeScanQrPopup(), 2000);
-    }
-
-    function spinRoulette() {
-        if (balance >= 100) {
-            balance -= 100;
-            const prizes = [0, 50, 100, 200, 500, 1000];
-            const win = prizes[Math.floor(Math.random() * prizes.length)];
-            balance += win;
-            document.getElementById('roulette-result').innerText = "🎉 " + win + " R$";
-            updateUI();
-        } else {
-            tg.showAlert("Нужно хотя бы 100 R$!");
-        }
-    }
+    let balance = parseInt(localStorage.getItem('ro_bal')) || 0;
+    let level = parseInt(localStorage.getItem('ro_lvl')) || 1;
+    let inventory = JSON.parse(localStorage.getItem('ro_inv')) || [];
 
     function updateUI() {
-        document.getElementById('balance').innerText = balance;
-        document.getElementById('lvl').innerText = lvl;
+        document.getElementById('balance').innerText = balance.toLocaleString();
+        document.getElementById('level').innerText = level;
+        document.getElementById('inv-count').innerText = inventory.length;
+        localStorage.setItem('ro_bal', balance);
+        localStorage.setItem('ro_lvl', level);
+        localStorage.setItem('ro_inv', JSON.stringify(inventory));
+        
+        if (tg.initDataUnsafe.user) {
+            document.getElementById('user-name').innerText = "@" + tg.initDataUnsafe.user.username;
+        }
     }
+
+    function showTab(name, el) {
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
+        document.getElementById('tab-' + name).classList.add('active');
+        el.classList.add('active');
+    }
+
+    // Сложная работа
+    function work() {
+        const btn = document.getElementById('work-btn');
+        balance += 10;
+        updateUI();
+        btn.disabled = true;
+        let seconds = 30;
+        
+        const timer = setInterval(() => {
+            seconds--;
+            btn.innerText = `Ждать ${seconds}с...`;
+            if (seconds <= 0) {
+                clearInterval(timer);
+                btn.disabled = false;
+                btn.innerText = "💎 Работать (+10 R$)";
+            }
+        }, 1000);
+    }
+
+    function buyPet(price, name) {
+        if (balance >= price) {
+            balance -= price;
+            level++;
+            inventory.push(name);
+            updateUI();
+            tg.showConfirm(`Вы успешно приобрели ${name}!`);
+        } else {
+            tg.showAlert("У вас недостаточно Robux! Заработайте или купите звезды.");
+        }
+    }
+
+    function buyStars(stars) {
+        // В реальном приложении здесь вызывается платежный метод Telegram
+        tg.showAlert(`Функция оплаты через Stars (${stars}) будет доступна после подключения платежного провайдера в BotFather.`);
+    }
+
+    updateUI();
 </script>
 
 </body>
