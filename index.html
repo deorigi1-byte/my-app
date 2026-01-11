@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adopt Me Market</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            font-family: sans-serif;
+            background-color: var(--tg-theme-bg-color, #fff);
+            color: var(--tg-theme-text-color, #000);
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+        }
+        .profile-card {
+            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+        }
+        .lvl-badge {
+            background: #0088cc;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 10px;
+            font-weight: bold;
+        }
+        .item-list {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .item-card {
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 10px;
+            background: white;
+            color: black;
+        }
+        .item-card img { width: 100%; border-radius: 5px; }
+        .buy-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 8px;
+            width: 100%;
+            border-radius: 5px;
+            margin-top: 5px;
+            cursor: pointer;
+        }
+        .support-btn {
+            margin-top: 20px;
+            color: #0088cc;
+            text-decoration: none;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="profile-card">
+        <h2 id="username">Загрузка...</h2>
+        <p>Ваш уровень: <span class="lvl-badge" id="lvl">1 LVL</span></p>
+        <p>Баланс: <b>500 Robux</b></p>
+    </div>
+
+    <h3>Магазин Петов</h3>
+    <div class="item-list">
+        <div class="item-card">
+            <img src="https://via.placeholder.com/100" alt="Pet">
+            <p><b>Shadow Dragon</b></p>
+            <p>1000 R$</p>
+            <button class="buy-btn" onclick="buy()">Купить</button>
+        </div>
+        <div class="item-card">
+            <img src="https://via.placeholder.com/100" alt="Pet">
+            <p><b>Frost Fury</b></p>
+            <p>500 R$</p>
+            <button class="buy-btn" onclick="buy()">Купить</button>
+        </div>
+    </div>
+
+    <a href="https://t.me/your_admin_username" class="support-btn">Написать в поддержку</a>
+
+    <script>
+        // Инициализация Telegram WebApp
+        let tg = window.Telegram.WebApp;
+        tg.expand(); // Развернуть на всё окно
+
+        // Берем имя пользователя из Telegram
+        if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+            document.getElementById('username').innerText = tg.initDataUnsafe.user.first_name;
+        }
+
+        function buy() {
+            tg.showConfirm("Вы уверены, что хотите купить этого пета?");
+        }
+    </script>
+</body>
+</html>
