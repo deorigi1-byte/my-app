@@ -3,184 +3,173 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Adopt Me Premium</title>
+    <title>Adopt Me Trade System</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        :root {
-            --main-bg: #0f0f13;
-            --card-bg: #1e1e24;
-            --accent: #7b2cbf;
-            --gold: #ff9100;
-            --text: #e0e0e0;
-        }
-        body { font-family: 'Inter', sans-serif; background: var(--main-bg); color: var(--text); margin: 0; padding: 0; user-select: none; }
-        .container { padding: 20px; padding-bottom: 100px; }
+        :root { --bg: #0a0a0c; --card: #16161a; --accent: #00f2ff; --gold: #ffcc00; --red: #ff4d4d; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: white; margin: 0; padding: 0; }
+        .container { padding: 15px; padding-bottom: 90px; }
         
-        /* Стилизация заголовков */
-        h2, h3 { color: var(--accent); text-transform: uppercase; letter-spacing: 1px; }
+        /* Профиль и Инвентарь */
+        .header { background: var(--card); border-radius: 20px; padding: 20px; border: 1px solid #333; margin-bottom: 20px; }
+        .balance-box { font-size: 24px; color: var(--gold); font-weight: bold; }
+        .inventory-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .pet-card { background: #222; border-radius: 12px; padding: 10px; text-align: center; border: 1px solid #444; }
+        .pet-card img { width: 50px; }
 
-        /* Профиль */
-        .profile-card {
-            background: linear-gradient(145deg, #23232e, #16161d);
-            border-radius: 20px; padding: 20px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
-            border: 1px solid #333; margin-bottom: 20px;
-        }
-        .balance-info { font-size: 28px; font-weight: bold; color: var(--gold); margin: 10px 0; }
-        
-        /* Кнопки действий */
-        .action-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .btn {
-            background: var(--accent); color: white; border: none; padding: 15px;
-            border-radius: 12px; font-weight: bold; cursor: pointer; transition: 0.2s;
-        }
-        .btn:disabled { background: #444; color: #888; }
-        .btn-star { background: #00a8ff; display: flex; align-items: center; justify-content: center; gap: 5px; }
+        /* Вывод средств */
+        .withdraw-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 100; padding: 20px; box-sizing: border-box; text-align: center; }
+        .loader { width: 100%; height: 10px; background: #333; border-radius: 5px; margin: 20px 0; overflow: hidden; }
+        .progress { width: 0%; height: 100%; background: var(--accent); transition: 0.5s; }
 
-        /* Магазин */
-        .shop-item {
-            background: var(--card-bg); border-radius: 15px; padding: 15px;
-            margin-bottom: 15px; display: flex; align-items: center; border: 1px solid #2d2d35;
-        }
-        .shop-item img { width: 60px; height: 60px; margin-right: 15px; filter: drop-shadow(0 0 5px var(--accent)); }
-        .item-info { flex-grow: 1; }
-
-        /* Вкладки */
-        .tab-content { display: none; animation: slideUp 0.4s ease; }
-        .active { display: block; }
-        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        /* Кнопки */
+        .btn { background: var(--accent); color: black; border: none; padding: 12px; border-radius: 10px; width: 100%; font-weight: bold; margin-top: 5px; cursor: pointer; }
+        .btn-withdraw { background: #28a745; color: white; font-size: 12px; }
+        .btn-friend { background: #5865F2; color: white; margin-bottom: 10px; }
 
         /* Навигация */
-        .navbar {
-            position: fixed; bottom: 0; width: 100%; background: #16161d;
-            display: flex; justify-content: space-around; padding: 15px 0;
-            border-top: 2px solid var(--accent);
-        }
-        .nav-link { font-size: 20px; color: #555; cursor: pointer; }
-        .nav-link.active { color: var(--accent); text-shadow: 0 0 10px var(--accent); }
-
-        .inventory-list { font-size: 14px; color: #aaa; margin-top: 10px; }
+        .navbar { position: fixed; bottom: 0; width: 100%; background: #111; display: flex; justify-content: space-around; padding: 15px 0; border-top: 1px solid #333; }
+        .nav-item { font-size: 20px; color: #555; }
+        .nav-item.active { color: var(--accent); }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div id="tab-profile" class="tab-content active">
-        <div class="profile-card">
-            <div id="user-name" style="font-size: 18px; opacity: 0.8;">Загрузка...</div>
-            <div class="balance-info"><span id="balance">0</span> R$</div>
-            <div style="margin-bottom: 10px;">Уровень: <span id="level" style="color:var(--accent)">1</span></div>
-            <div class="inventory-list">Инвентарь: <span id="inv-count">0</span> петов</div>
+    <div id="p-main" class="tab">
+        <div class="header">
+            <div style="opacity: 0.6;" id="username">Загрузка...</div>
+            <div class="balance-box"><span id="balance">0</span> R$</div>
+            <p>Уровень: <span id="lvl" style="color:var(--accent)">1</span></p>
         </div>
 
-        <button class="btn" id="work-btn" onclick="work()" style="width: 100%; margin-bottom: 10px;">💎 Работать (+10 R$)</button>
+        <h3>Твой Инвентарь</h3>
+        <div id="inventory" class="inventory-grid">
+            </div>
         
-        <h3>Пополнить баланс</h3>
-        <div class="action-btns">
-            <button class="btn btn-star" onclick="buyStars(50)">🌟 500 R$</button>
-            <button class="btn btn-star" onclick="buyStars(100)">🌟 1200 R$</button>
-        </div>
+        <button class="btn" onclick="work()" id="work-btn" style="margin-top:20px">💎 Работать (+20 R$)</button>
     </div>
 
-    <div id="tab-shop" class="tab-content">
-        <h3>Элитные Петы</h3>
-        <div class="shop-item">
-            <img src="https://api.dicebear.com/7.x/icons/svg?seed=dragon&color=7b2cbf" alt="pet">
-            <div class="item-info">
-                <b>Neon Dragon</b><br>
-                <small>Цена: 2500 R$</small>
-            </div>
-            <button class="btn" onclick="buyPet(2500, 'Neon Dragon')">Купить</button>
+    <div id="p-shop" class="tab" style="display:none">
+        <h3>Магазин</h3>
+        <div class="pet-card" style="width:100%; margin-bottom:10px; display:flex; align-items:center; justify-content:space-around;">
+            <img src="https://api.dicebear.com/7.x/bottts/svg?seed=wolf" alt="pet">
+            <b>Cербер</b>
+            <span style="color:var(--gold)">1500 R$</span>
+            <button class="btn" style="width:auto" onclick="buyPet(1500, 'Сербер')">Купить</button>
         </div>
-        <div class="shop-item">
-            <img src="https://api.dicebear.com/7.x/icons/svg?seed=unicorn&color=7b2cbf" alt="pet">
-            <div class="item-info">
-                <b>Mega Unicorn</b><br>
-                <small>Цена: 5000 R$</small>
-            </div>
-            <button class="btn" onclick="buyPet(5000, 'Mega Unicorn')">Купить</button>
+        <div class="pet-card" style="width:100%; margin-bottom:10px; display:flex; align-items:center; justify-content:space-around;">
+            <img src="https://api.dicebear.com/7.x/bottts/svg?seed=cat" alt="pet">
+            <b>Pink Cat</b>
+            <span style="color:var(--gold)">3000 R$</span>
+            <button class="btn" style="width:auto" onclick="buyPet(3000, 'Pink Cat')">Купить</button>
         </div>
     </div>
+</div>
 
-    <div id="tab-help" class="tab-content">
-        <h3>Центр поддержки</h3>
-        <p>Возникли проблемы с оплатой или получением петов?</p>
-        <button class="btn" style="background:#444" onclick="tg.openTelegramLink('https://t.me/ТВОЙ_НИК')">Написать админу</button>
+<div id="withdraw-modal" class="withdraw-overlay">
+    <h2>Вывод Пета</h2>
+    <p>Шаг 1: Добавь в друзья администратора</p>
+    <div style="background:#222; padding:15px; border-radius:10px; font-weight:bold; font-size:20px; margin:10px 0; color:var(--accent)">
+        MOLOPOLPKOLO1
+    </div>
+    <button class="btn btn-friend" onclick="tg.openLink('https://www.roblox.com/users/12345/profile')">Открыть профиль Roblox</button>
+    
+    <div id="check-section">
+        <button class="btn" onclick="startCheck()">Я добавил в друзья</button>
+    </div>
+
+    <div id="status-section" style="display:none">
+        <p id="status-text">Проверка добавления...</p>
+        <div class="loader"><div class="progress" id="bar"></div></div>
     </div>
 </div>
 
 <div class="navbar">
-    <div class="nav-link active" onclick="showTab('profile', this)">👤</div>
-    <div class="nav-link" onclick="showTab('shop', this)">🛒</div>
-    <div class="nav-link" onclick="showTab('help', this)">🛠️</div>
+    <div class="nav-item active" onclick="switchTab('main')">🏠</div>
+    <div class="nav-item" onclick="switchTab('shop')">🛒</div>
 </div>
 
 <script>
     let tg = window.Telegram.WebApp;
     tg.expand();
-    tg.headerColor = "#0f0f13";
 
-    let balance = parseInt(localStorage.getItem('ro_bal')) || 0;
-    let level = parseInt(localStorage.getItem('ro_lvl')) || 1;
-    let inventory = JSON.parse(localStorage.getItem('ro_inv')) || [];
+    let bal = parseInt(localStorage.getItem('b')) || 0;
+    let lvl = parseInt(localStorage.getItem('l')) || 1;
+    let inv = JSON.parse(localStorage.getItem('i')) || [];
 
-    function updateUI() {
-        document.getElementById('balance').innerText = balance.toLocaleString();
-        document.getElementById('level').innerText = level;
-        document.getElementById('inv-count').innerText = inventory.length;
-        localStorage.setItem('ro_bal', balance);
-        localStorage.setItem('ro_lvl', level);
-        localStorage.setItem('ro_inv', JSON.stringify(inventory));
+    function update() {
+        document.getElementById('balance').innerText = bal;
+        document.getElementById('lvl').innerText = lvl;
+        document.getElementById('username').innerText = tg.initDataUnsafe.user?.first_name || "Игрок";
         
-        if (tg.initDataUnsafe.user) {
-            document.getElementById('user-name').innerText = "@" + tg.initDataUnsafe.user.username;
-        }
+        let invDiv = document.getElementById('inventory');
+        invDiv.innerHTML = inv.length === 0 ? "<p style='color:#666'>Пусто...</p>" : "";
+        inv.forEach((pet, index) => {
+            invDiv.innerHTML += `
+                <div class="pet-card">
+                    <b>${pet}</b><br>
+                    <button class="btn btn-withdraw" onclick="openWithdraw(${index})">Вывести</button>
+                </div>
+            `;
+        });
+
+        localStorage.setItem('b', bal);
+        localStorage.setItem('l', lvl);
+        localStorage.setItem('i', JSON.stringify(inv));
     }
 
-    function showTab(name, el) {
-        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-        document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
-        document.getElementById('tab-' + name).classList.add('active');
-        el.classList.add('active');
-    }
-
-    // Сложная работа
     function work() {
-        const btn = document.getElementById('work-btn');
-        balance += 10;
-        updateUI();
+        bal += 20;
+        update();
+        let btn = document.getElementById('work-btn');
         btn.disabled = true;
-        let seconds = 30;
-        
-        const timer = setInterval(() => {
-            seconds--;
-            btn.innerText = `Ждать ${seconds}с...`;
-            if (seconds <= 0) {
-                clearInterval(timer);
-                btn.disabled = false;
-                btn.innerText = "💎 Работать (+10 R$)";
-            }
-        }, 1000);
+        setTimeout(() => btn.disabled = false, 5000);
     }
 
     function buyPet(price, name) {
-        if (balance >= price) {
-            balance -= price;
-            level++;
-            inventory.push(name);
-            updateUI();
-            tg.showConfirm(`Вы успешно приобрели ${name}!`);
+        if (bal >= price) {
+            bal -= price;
+            inv.push(name);
+            update();
+            tg.showAlert("Пет куплен! Проверь профиль.");
         } else {
-            tg.showAlert("У вас недостаточно Robux! Заработайте или купите звезды.");
+            tg.showAlert("Не хватает робуксов!");
         }
     }
 
-    function buyStars(stars) {
-        // В реальном приложении здесь вызывается платежный метод Telegram
-        tg.showAlert(`Функция оплаты через Stars (${stars}) будет доступна после подключения платежного провайдера в BotFather.`);
+    function openWithdraw(index) {
+        document.getElementById('withdraw-modal').style.display = 'block';
     }
 
-    updateUI();
+    function startCheck() {
+        document.getElementById('check-section').style.display = 'none';
+        document.getElementById('status-section').style.display = 'block';
+        let bar = document.getElementById('bar');
+        let txt = document.getElementById('status-text');
+        
+        let p = 0;
+        let int = setInterval(() => {
+            p += 5;
+            bar.style.width = p + "%";
+            if(p >= 100) {
+                clearInterval(int);
+                txt.innerText = "Успешно! Ожидание захода админа в игру...";
+                txt.style.color = "var(--gold)";
+                setTimeout(() => {
+                    tg.showAlert("Админ в сети! Заходи в Adopt Me, он отправит трейд.");
+                    document.getElementById('withdraw-modal').style.display = 'none';
+                }, 4000);
+            }
+        }, 150);
+    }
+
+    function switchTab(t) {
+        document.querySelectorAll('.tab').forEach(x => x.style.display = 'none');
+        document.getElementById('p-' + t).style.display = 'block';
+    }
+
+    update();
 </script>
 
 </body>
